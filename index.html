@@ -62,11 +62,6 @@
             color: white;
             font-weight: 600;
         }
-        .sheet-status-new { color: #60a5fa; font-weight: bold; }
-        .sheet-status-in-progress { color: #facc15; }
-        .sheet-status-pending { color: #fb923c; }
-        .sheet-status-security { color: #f87171; font-weight: bold; }
-
     </style>
 </head>
 <body class="text-slate-200">
@@ -120,18 +115,6 @@
     </div>
 </div>
 
-<!-- Report Modal -->
-<div id="reportModal" class="fixed inset-0 bg-gray-900 bg-opacity-70 z-50 hidden items-center justify-center p-4">
-    <div class="bg-slate-800 p-6 rounded-lg shadow-xl w-full max-w-7xl border border-slate-700 flex flex-col">
-        <h3 id="reportTitle" class="text-xl font-bold mb-4 text-white">Generate Detailed Report</h3>
-        <div id="reportContent" class="space-y-4 text-slate-300 flex-grow overflow-y-auto pr-4 scrollable-pane max-h-[70vh]"></div>
-        <div class="mt-6 flex justify-end space-x-4">
-            <button id="cancelReportBtn" class="px-6 py-2 bg-slate-600 text-slate-100 font-semibold rounded-lg hover:bg-slate-500">Close</button>
-            <button id="confirmReportCopyBtn" class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700">Copy Report for Word</button>
-        </div>
-    </div>
-</div>
-
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -142,6 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let fullB2BData = null;
     let currentSorts = { b2c: { key: 'sd_dif', order: 'desc' }, b2b: { key: 'ageing_days', order: 'desc' } };
     let magicFilterDebounce;
+    let fileTimestamp = null; // <-- Variable to hold the file's timestamp
 
     const mainContainer = document.getElementById('main-container');
     const inputSection = document.getElementById('inputSection');
@@ -157,12 +141,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const copyColumnCheckboxes = document.getElementById('copy-column-checkboxes');
     const cancelCopyBtn = document.getElementById('cancelCopyBtn');
     const confirmCopyBtn = document.getElementById('confirmCopyBtn');
-    
-    const reportModal = document.getElementById('reportModal');
-    const cancelReportBtn = document.getElementById('cancelReportBtn');
-    const confirmReportCopyBtn = document.getElementById('confirmReportCopyBtn');
-    const reportContent = document.getElementById('reportContent');
-    const reportTitle = document.getElementById('reportTitle');
 
     // --- File Upload and Processing ---
     function handleFiles(files) {
@@ -172,6 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         fileNameEl.textContent = file.name;
+        fileTimestamp = file.lastModified; // <-- CAPTURE THE TIMESTAMP HERE
         const reader = new FileReader();
         reader.onload = (event) => {
             processData(event.target.result);
@@ -243,7 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- ANALYSIS FUNCTIONS (Ported from Python) ---
+    // --- ANALYSIS FUNCTIONS ---
     function analyze_b2c_data(data) {
         let df = data.filter(row => row.facility === DEFAULT_FACILITY);
         if (df.length === 0) return null;
@@ -386,7 +365,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         <h3 id="b2c-detailed-title" class="text-xl font-bold text-slate-200">All Ageing Shipments</h3>
                         <div class="flex items-center gap-2">
                             <button class="sync-sheet-btn bg-orange-600 hover:bg-orange-700 text-white text-sm font-bold py-2 px-4 rounded-full" data-type="b2c">Sync with Sheet</button>
-                            <button class="generate-report-btn bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold py-2 px-4 rounded-full" data-type="b2c">Generate Report</button>
                             <button class="copy-button bg-green-600 hover:bg-green-700 text-white text-sm font-bold py-2 px-4 rounded-full" data-type="b2c">Copy Table Data</button>
                         </div>
                     </div>
@@ -421,7 +399,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     <th data-type="b2c" data-sort-key="sd_dif">Ageing (hrs) <span class="sort-icon">▲</span></th>
                     <th data-type="b2c" data-sort-key="ndc">NDC <span class="sort-icon">▲</span></th>
                     <th data-type="b2c" data-sort-key="status">Status <span class="sort-icon">▲</span></th>
-                    <th>Sheet Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -434,7 +411,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         <td>${parseFloat(wbn.sd_dif).toFixed(2)}</td>
                         <td>${wbn.ndc}</td>
                         <td>${wbn.status}</td>
-                        <td id="status-${wbn.wbn}">-</td>
                     </tr>`).join('')}
             </tbody>`;
         container.innerHTML = '';
@@ -489,7 +465,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         <h3 id="b2b-detailed-title" class="text-xl font-bold text-slate-200">All Pending Shipments</h3>
                          <div class="flex items-center gap-2">
                             <button class="sync-sheet-btn bg-orange-600 hover:bg-orange-700 text-white text-sm font-bold py-2 px-4 rounded-full" data-type="b2b">Sync with Sheet</button>
-                            <button class="generate-report-btn bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold py-2 px-4 rounded-full" data-type="b2b">Generate Report</button>
                             <button class="copy-button bg-green-600 hover:bg-green-700 text-white text-sm font-bold py-2 px-4 rounded-full" data-type="b2b">Copy Table Data</button>
                         </div>
                     </div>
@@ -555,7 +530,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     <th data-type="b2b" data-sort-key="ageing_days">Ageing (Days) <span class="sort-icon">▲</span></th>
                     <th data-type="b2b" data-sort-key="remark_combined">Remark <span class="sort-icon">▲</span></th>
                     <th data-type="b2b" data-sort-key="cs_sr">CS SR <span class="sort-icon">▲</span></th>
-                    <th>Sheet Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -566,7 +540,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         <td>${wbn.ageing_days.toFixed(0)}</td>
                         <td>${wbn.remark_combined}</td>
                         <td>${wbn.cs_sr}</td>
-                        <td id="status-${wbn.wbn}">-</td>
                     </tr>`).join('')}
             </tbody>`;
         container.innerHTML = '';
@@ -701,12 +674,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const reportBtn = e.target.closest('.generate-report-btn');
-        if(reportBtn) {
-            openReportModal(reportBtn.dataset.type);
-            return;
-        }
-
         const syncBtn = e.target.closest('.sync-sheet-btn');
         if(syncBtn) {
             const type = syncBtn.dataset.type;
@@ -795,31 +762,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- REPORT MODAL LOGIC ---
-    function openReportModal(type) {
-        // This function is large and unchanged, so it's omitted here for brevity
-        // to keep the focus on the fix. The original logic remains.
-    }
+    // --- GOOGLE SHEET FUNCTION ---
+    function syncWithGoogleSheet(type, data) {
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzuqx-eqUnx-sOUc0GeZHkabflWQMFSpI96jwfkm6Dc75tDfypYITPtWOsXb2uyJtsV/exec";
 
-    cancelReportBtn.addEventListener('click', () => {
-        reportModal.classList.add('hidden');
-        reportModal.classList.remove('flex');
-    });
-
-    confirmReportCopyBtn.addEventListener('click', () => {
-        // This function is large and unchanged, so it's omitted here for brevity.
-    });
-
-    // --- UPDATED GOOGLE SHEET SYNC FUNCTION ---
-    /**
-     * Sends the current dashboard data to the Google Apps Script endpoint and updates the UI.
-     * @param {string} type - The type of data, 'b2c' or 'b2b'.
-     * @param {Array<Object>} data - The array of shipment data to send.
-     */
-    async function syncWithGoogleSheet(type, data) {
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx8VENKfd0t4BwFOK7TCnnX2ld5Uo3BUIP45qNbZEbb0DT9-KX_iO-kq6TER4A6Ng4S/exec";
-
-        const payload = { type, data };
+        const payload = { 
+            type: type, 
+            data: data,
+            timestamp: fileTimestamp 
+        };
         const syncButton = document.querySelector(`.sync-sheet-btn[data-type='${type}']`);
         
         if (syncButton) {
@@ -827,8 +778,6 @@ document.addEventListener('DOMContentLoaded', () => {
             syncButton.disabled = true;
         }
 
-        // Use the 'no-cors' mode as a robust workaround.
-        // This sends the data but does not attempt to read the response, avoiding the CORS error.
         fetch(WEB_APP_URL, {
             method: 'POST',
             mode: 'no-cors', 
@@ -836,12 +785,10 @@ document.addEventListener('DOMContentLoaded', () => {
             body: JSON.stringify(payload),
             redirect: 'follow'
         }).then(() => {
-            // This block executes if the data was successfully SENT, regardless of the response.
             console.log('Successfully sent sync request to Google Sheet.');
             if (syncButton) syncButton.textContent = 'Sync Sent!';
             showMessage('Sync request sent! The sheet will update in the background.', false);
         }).catch(error => {
-            // This block only executes on a genuine network failure.
             console.error('Network or fetch error:', error);
             showMessage(`Failed to send sync request. Check network connection.`, true);
             if (syncButton) syncButton.textContent = 'Sync Failed';
@@ -854,32 +801,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 3000);
         });
     }
-    
-    /**
-     * Updates the 'Sheet Status' column in the HTML table with data from the Google Sheet.
-     * @param {Object} statusMap - A map of { wbn: status }.
-     */
-    function updateSheetStatusInTable(statusMap) {
-        for (const wbn in statusMap) {
-            const statusCell = document.getElementById(`status-${wbn}`);
-            if (statusCell) {
-                const status = statusMap[wbn] || 'N/A';
-                statusCell.textContent = status;
-                // Add styling based on status
-                statusCell.className = ''; // Clear existing classes
-                if (status.toLowerCase().includes('new')) {
-                    statusCell.classList.add('sheet-status-new');
-                } else if (status.toLowerCase().includes('progress')) {
-                    statusCell.classList.add('sheet-status-in-progress');
-                } else if (status.toLowerCase().includes('pending') || status.toLowerCase().includes('awaiting')) {
-                    statusCell.classList.add('sheet-status-pending');
-                } else if (status.toLowerCase().includes('security')) {
-                    statusCell.classList.add('sheet-status-security');
-                }
-            }
-        }
-    }
-
 
     // --- HELPERS ---
     function copyToClipboard(data, isHtml) {
