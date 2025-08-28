@@ -62,6 +62,14 @@
             color: white;
             font-weight: 600;
         }
+        @keyframes glowing {
+            0% { box-shadow: 0 0 5px #a855f7, 0 0 10px #a855f7, 0 0 15px #a855f7; }
+            50% { box-shadow: 0 0 10px #c084fc, 0 0 20px #c084fc, 0 0 30px #c084fc; }
+            100% { box-shadow: 0 0 5px #a855f7, 0 0 10px #a855f7, 0 0 15px #a855f7; }
+        }
+        .glow-button {
+            animation: glowing 2.5s infinite ease-in-out;
+        }
     </style>
 </head>
 <body class="text-slate-200">
@@ -79,6 +87,12 @@
             <input type="file" id="csv-upload" class="hidden" accept=".csv, text/csv">
         </div>
         <div id="messageArea" class="mt-6 text-center"></div>
+        <div class="mt-8">
+            <a href="https://rahulphari.github.io/age/" target="_blank" class="glow-button inline-block bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-transform transform hover:scale-105">
+                🚀 AGE-SIGHT: Mission Control
+                <span class="text-xs font-normal block opacity-80">Predictive Analysis & Report Generation</span>
+            </a>
+        </div>
     </div>
 
     <div id="resultsContainer" class="hidden space-y-8">
@@ -474,7 +488,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <button class="copy-button bg-green-600 hover:bg-green-700 text-white text-sm font-bold py-2 px-4 rounded-full" data-type="b2b">Copy Table Data</button>
                         </div>
                     </div>
-                     <input type="text" class="magic-filter w-full bg-slate-700 border border-slate-600 rounded-md p-2 text-slate-200 placeholder-slate-400" placeholder="Magic Filter: Search WBN, NTC, Client, Remark..." data-type="b2b">
+                       <input type="text" class="magic-filter w-full bg-slate-700 border border-slate-600 rounded-md p-2 text-slate-200 placeholder-slate-400" placeholder="Magic Filter: Search WBN, NTC, Client, Remark..." data-type="b2b">
                     <div id="b2b-detailed-table" class="overflow-x-auto"></div>
                 </div>
             </div>`;
