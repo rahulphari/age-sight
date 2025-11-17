@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AGE-SIGHT 2.0: Ageing Analytics Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Poppins:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0C0D11;
+            --bg-secondary: rgba(22, 24, 33, 0.5);
+            --border-primary: rgba(255, 255, 255, 0.1);
+            --text-primary: #E2E8F0; /* slate-200 */
+            --text-secondary: #94A3B8; /* slate-400 */
+            --accent-blue: #38BDF8; /* sky-400 */
+            --accent-purple: #A78BFA; /* violet-400 */
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg-primary);
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 2rem 2rem;
+            color: var(--text-primary);
+        }
+        
+        h1, h2, h3, h4, .font-heading {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .container { max-width: 1600px; margin: 0 auto; }
+        
+        .card-v2 {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        .card-v2:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2), 0 0 20px rgba(56, 189, 248, 0.2);
+        }
+        
+        .data-table th { 
+            background-color: rgba(15, 23, 42, 0.8); /* slate-900 with opacity */
+            font-weight: 700; 
+            font-family: 'Poppins', sans-serif;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            position: relative; 
+        }
+
+        .data-table th .sort-icon { 
+            opacity: 0.4; 
+            transition: opacity 0.2s, transform 0.2s; 
+        }
+        .data-table th:hover .sort-icon { opacity: 0.7; }
+        .data-table th.sorted-asc .sort-icon, .data-table th.sorted-desc .sort-icon { 
+            opacity: 1; 
+            color: var(--accent-blue); 
+        }
+        .data-table th.sorted-desc .sort-icon { transform: rotate(180deg); }
+
+        .data-table tbody tr {
+            transition: background-color 0.2s;
+        }
+        .data-table tbody tr:hover { 
+            background-color: rgba(56, 189, 248, 0.05);
+        }
+
+        .shipment-indicator {
+            font-weight: bold; font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 99px;
+            margin-left: 6px; vertical-align: middle; display: inline-block;
+            border: 1px solid;
+            box-shadow: 0 0 5px, inset 0 0 3px;
+        }
+        .indicator-h { 
+            border-color: #f87171; color: #fecaca; 
+            background-color: rgba(239, 68, 68, 0.1);
+            box-shadow: 0 0 5px #ef4444, inset 0 0 3px #ef4444;
+        }
+        .indicator-l { 
+            border-color: #60a5fa; color: #dbeafe; 
+            background-color: rgba(59, 130, 246, 0.1);
+            box-shadow: 0 0 5px #3b82f6, inset 0 0 3px #3b82f6;
+        }
+        
+        .scrollable-pane::-webkit-scrollbar { width: 6px; }
+        .scrollable-pane::-webkit-scrollbar-track { background: transparent; }
+        .scrollable-pane::-webkit-scrollbar-thumb { background: var(--accent-blue); border-radius: 10px; }
+
+        .copy-filter-btn {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        .copy-filter-btn:hover {
+             background-color: rgba(255, 255, 255, 0.1);
+             color: var(--text-primary);
+        }
+        .copy-filter-btn.active {
+            background-color: var(--accent-blue);
+            color: var(--bg-primary);
+            font-weight: 700;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+        }
+        
+        @keyframes glowing-border {
+            0% { box-shadow: 0 0 5px var(--accent-purple), 0 0 10px var(--accent-purple); }
+            50% { box-shadow: 0 0 20px var(--accent-blue), 0 0 30px var(--accent-blue); }
+            100% { box-shadow: 0 0 5px var(--accent-purple), 0 0 10px var(--accent-purple); }
+        }
+        .glow-button-v2 {
+            animation: glowing-border 3s infinite ease-in-out;
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="text-slate-200">
+
+<div id="main-container" class="container">
+    <div id="root"></div>
+</div>
+
+<footer class="text-center py-8 w-full">
+     <p class="text-xs text-slate-500 tracking-wider">
+        Designed & Crafted by Rh. | for ⚡ Team Sonic - Hubli (for internal use only)
+    </p>
+</footer>
+
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+{
+  "name": "Copy of AGE-SIGHT: Ageing Analytics Dashboard",
+  "description": "An analytics dashboard to process, visualize, and interact with B2B and B2C ageing data from CSV files. Features dynamic filtering, sorting, data copying, and Google Sheet synchronization.",
+  "requestFramePermissions": []
+}
