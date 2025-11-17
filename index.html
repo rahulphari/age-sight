@@ -3,941 +3,892 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AGE-SIGHT 2.0: Ageing Analytics Dashboard</title>
+    <title>AGE-SIGHT: Ageing Analytics Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Poppins:wght@700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-primary: #0C0D11;
-            --bg-secondary: rgba(22, 24, 33, 0.5);
-            --border-primary: rgba(255, 255, 255, 0.1);
-            --text-primary: #E2E8F0; /* slate-200 */
-            --text-secondary: #94A3B8; /* slate-400 */
-            --accent-blue: #38BDF8; /* sky-400 */
-            --accent-purple: #A78BFA; /* violet-400 */
-        }
-
         body { 
             font-family: 'Inter', sans-serif; 
-            background-color: var(--bg-primary);
-            background-image: 
-                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-color: #0f172a; /* slate-900 */
+            background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0);
             background-size: 2rem 2rem;
-            color: var(--text-primary);
         }
-        
-        h1, h2, h3, h4, .font-heading {
-            font-family: 'Poppins', sans-serif;
+        .container { max-width: 1600px; margin: 1.5rem auto; padding: 1.5rem; }
+        .dashboard-header {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6); color: white; padding: 2rem;
+            border-radius: 0.75rem; margin-bottom: 2rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
         }
-
-        .container { max-width: 1600px; margin: 0 auto; }
-        
-        .card-v2 {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-primary);
-            border-radius: 0.75rem;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
+        .card {
+            background-color: #1e293b; /* slate-800 */
+            border: 1px solid #334155; /* slate-700 */
+            border-radius: 0.75rem; padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
         }
-        .card-v2:hover {
-            border-color: var(--accent-blue);
-            transform: translateY(-4px);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2), 0 0 20px rgba(56, 189, 248, 0.2);
+        .summary-card { cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+        .summary-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(30, 41, 59, 0.5), 0 4px 6px -2px rgba(30, 41, 59, 0.3);
         }
-        
-        .data-table th { 
-            background-color: rgba(15, 23, 42, 0.8); /* slate-900 with opacity */
-            font-weight: 700; 
-            font-family: 'Poppins', sans-serif;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-            font-size: 0.75rem;
-            position: relative; 
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .data-table th, .data-table td {
+            padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid #334155; /* slate-700 */
+            font-size: 0.875rem;
         }
-
-        .data-table th .sort-icon { 
-            opacity: 0.4; 
-            transition: opacity 0.2s, transform 0.2s; 
-        }
+        .data-table th { background-color: #334155; /* slate-700 */ font-weight: 500; cursor: pointer; position: relative; }
+        .data-table th .sort-icon { opacity: 0.4; transition: opacity 0.2s, transform 0.2s; }
         .data-table th:hover .sort-icon { opacity: 0.7; }
-        .data-table th.sorted-asc .sort-icon, .data-table th.sorted-desc .sort-icon { 
-            opacity: 1; 
-            color: var(--accent-blue); 
-        }
+        .data-table th.sorted-asc .sort-icon, .data-table th.sorted-desc .sort-icon { opacity: 1; color: #60a5fa; }
         .data-table th.sorted-desc .sort-icon { transform: rotate(180deg); }
-
-        .data-table tbody tr {
-            transition: background-color 0.2s;
-        }
-        .data-table tbody tr:hover { 
-            background-color: rgba(56, 189, 248, 0.05);
-        }
-
+        .data-table tbody tr:hover { background-color: #334155; /* slate-700 */ }
         .shipment-indicator {
-            font-weight: bold; font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 99px;
-            margin-left: 6px; vertical-align: middle; display: inline-block;
-            border: 1px solid;
-            box-shadow: 0 0 5px, inset 0 0 3px;
+            font-weight: bold; font-size: 0.7rem; padding: 0.1rem 0.3rem; border-radius: 99px;
+            margin-left: 4px; vertical-align: super; display: inline-block;
         }
-        .indicator-h { 
-            border-color: #f87171; color: #fecaca; 
-            background-color: rgba(239, 68, 68, 0.1);
-            box-shadow: 0 0 5px #ef4444, inset 0 0 3px #ef4444;
-        }
-        .indicator-l { 
-            border-color: #60a5fa; color: #dbeafe; 
-            background-color: rgba(59, 130, 246, 0.1);
-            box-shadow: 0 0 5px #3b82f6, inset 0 0 3px #3b82f6;
-        }
-        
-        .scrollable-pane::-webkit-scrollbar { width: 6px; }
-        .scrollable-pane::-webkit-scrollbar-track { background: transparent; }
-        .scrollable-pane::-webkit-scrollbar-thumb { background: var(--accent-blue); border-radius: 10px; }
-
+        .indicator-h { background-color: #dc2626; color: #fef2f2; }
+        .indicator-l { background-color: #2563eb; color: #eff6ff; }
+        .scrollable-pane::-webkit-scrollbar { width: 8px; }
+        .scrollable-pane::-webkit-scrollbar-track { background: #1e293b; }
+        .scrollable-pane::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
         .copy-filter-btn {
-            background-color: rgba(255, 255, 255, 0.05);
-            color: var(--text-secondary);
+            background-color: #334155; /* slate-700 */
+            color: #cbd5e1; /* slate-300 */
             padding: 0.5rem 1rem;
             border-radius: 0.5rem;
-            border: 1px solid transparent;
-            transition: all 0.2s;
-        }
-        .copy-filter-btn:hover {
-             background-color: rgba(255, 255, 255, 0.1);
-             color: var(--text-primary);
+            transition: background-color 0.2s;
         }
         .copy-filter-btn.active {
-            background-color: var(--accent-blue);
-            color: var(--bg-primary);
-            font-weight: 700;
-            border-color: var(--accent-blue);
-            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+            background-color: #2563eb; /* blue-600 */
+            color: white;
+            font-weight: 600;
         }
-        
-        @keyframes glowing-border {
-            0% { box-shadow: 0 0 5px var(--accent-purple), 0 0 10px var(--accent-purple); }
-            50% { box-shadow: 0 0 20px var(--accent-blue), 0 0 30px var(--accent-blue); }
-            100% { box-shadow: 0 0 5px var(--accent-purple), 0 0 10px var(--accent-purple); }
+        @keyframes glowing {
+            0% { box-shadow: 0 0 5px #a855f7, 0 0 10px #a855f7, 0 0 15px #a855f7; }
+            50% { box-shadow: 0 0 10px #c084fc, 0 0 20px #c084fc, 0 0 30px #c084fc; }
+            100% { box-shadow: 0 0 5px #a855f7, 0 0 10px #a855f7, 0 0 15px #a855f7; }
         }
-        .glow-button-v2 {
-            animation: glowing-border 3s infinite ease-in-out;
+        .glow-button {
+            animation: glowing 2.5s infinite ease-in-out;
         }
     </style>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <script type="importmap">
 {
   "imports": {
     "react": "https://aistudiocdn.com/react@^19.2.0",
-    "react-dom/client": "https://aistudiocdn.com/react-dom@^19.2.0/client",
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/"
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/"
   }
 }
 </script>
+<link rel="stylesheet" href="/index.css">
 </head>
 <body class="text-slate-200">
 
 <div id="main-container" class="container">
-    <div id="root"></div>
+    <div id="inputSection" class="h-full flex flex-col items-center justify-center text-center">
+        <h1 class="text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-green-400">AGE-SIGHT</h1>
+        <p class="mt-4 text-lg text-slate-300">Ageing Analytics Dashboard</p>
+        <div class="w-full max-w-2xl mx-auto mt-12">
+            <label for="csv-upload" id="upload-label" class="w-full cursor-pointer bg-slate-800/50 hover:bg-slate-700/70 border-2 border-dashed border-slate-600 rounded-lg flex flex-col items-center justify-center p-8 transition-all">
+                <svg class="w-12 h-12 text-slate-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l-3 3m3-3l3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" /></svg>
+                <span class="font-semibold text-xl text-slate-300">Upload Ageing Data</span>
+                <span id="file-name" class="text-sm text-slate-400 mt-1">Drag & drop or click to select a CSV file</span>
+            </label>
+            <input type="file" id="csv-upload" class="hidden" accept=".csv, text/csv">
+        </div>
+        <div id="messageArea" class="mt-6 text-center"></div>
+        <div class="mt-8">
+            <a href="https://rahulphari.github.io/age/" target="_blank" class="glow-button inline-block bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-transform transform hover:scale-105">
+                🚀 AGE-SIGHT: Mission Control
+                <span class="text-xs font-normal block opacity-80">Predictive Analysis & Report Generation</span>
+            </a>
+        </div>
+    </div>
+
+    <div id="resultsContainer" class="hidden space-y-8">
+        <!-- Dashboards will be dynamically inserted here -->
+    </div>
 </div>
 
-<footer class="text-center py-8 w-full">
+<footer class="text-center py-6 fixed bottom-0 w-full">
      <p class="text-xs text-slate-500 tracking-wider">
         Designed & Crafted by Rh. | for ⚡ Team Sonic - Hubli (for internal use only)
     </p>
 </footer>
 
-<script type="text/babel" data-type="module">
-// --- IMPORTS ---
-import React, { useState, useCallback, useMemo, DragEvent } from 'react';
-import ReactDOM from 'react-dom/client';
+<!-- Copy Modal -->
+<div id="copyModal" class="fixed inset-0 bg-gray-900 bg-opacity-70 z-50 hidden items-center justify-center p-4">
+    <div class="bg-slate-800 p-6 rounded-lg shadow-xl w-full max-w-2xl border border-slate-700">
+        <h3 class="text-xl font-bold mb-4 text-white">Customize Data to Copy</h3>
+        <div id="b2b-copy-filters" class="hidden mb-4">
+            <p class="text-sm font-medium text-slate-300 mb-2">Filter by Remark:</p>
+            <div class="flex space-x-2 rounded-lg bg-slate-900 p-1">
+                <button class="copy-filter-btn flex-1" data-filter="Controllable">Controllable</button>
+                <button class="copy-filter-btn flex-1" data-filter="Non-Controllable">Non-Controllable</button>
+                <button class="copy-filter-btn flex-1 active" data-filter="Both">Both</button>
+            </div>
+        </div>
+        <div>
+            <p class="text-sm font-medium text-slate-300 mb-2">Select Columns to Copy:</p>
+            <div id="copy-column-checkboxes" class="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto p-2 bg-slate-900 rounded-md border border-slate-700"></div>
+        </div>
+        <div class="mt-6 flex justify-end space-x-4">
+            <button id="cancelCopyBtn" class="px-6 py-2 bg-slate-600 text-slate-100 font-semibold rounded-lg hover:bg-slate-500">Cancel</button>
+            <button id="confirmCopyBtn" class="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700">Copy Selected Data</button>
+        </div>
+    </div>
+</div>
 
-// --- START OF INLINED CODE ---
 
-// From: types.ts
-// Note: Interfaces and types are design-time only and will be stripped by Babel.
-interface B2CRawRow {
-    [key: string]: string;
-}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // --- Globals and DOM Element Caching ---
+    const WBN_BASE_URL = "https://hq.delhivery.com/p/pntrzz/";
+    const DEFAULT_FACILITY = "Hubli_Budarshingi_H (Karnataka)";
+    let fullB2CData = null;
+    let fullB2BData = null;
+    let currentSorts = { b2c: { key: 'sd_dif', order: 'desc' }, b2b: { key: 'ageing_days', order: 'desc' } };
+    let magicFilterDebounce;
+    let fileTimestamp = null; // <-- Variable to hold the file's timestamp
 
-interface B2CProcessedRow {
-    wbn: string;
-    sd_dif: number;
-    large: boolean;
-    aging_bucket: string;
-    producttype: string;
-    status: string;
-    ndc: string;
-    facility: string;
-}
-
-interface B2CAnalysisResult {
-    summary: {
-        totalWBNs: number;
-        ageBreakdown: { [key: string]: number };
-        productBreakdown: { [key: string]: number };
-        statusBreakdown: { [key: string]: number };
-    };
-    ndcSummary: { ndc: string; total_ageing_wbns: number; age_gt_96: number }[];
-    detailedWBNs: B2CProcessedRow[];
-}
-
-interface B2BRawRow {
-    [key: string]: string;
-}
-
-interface B2BProcessedRow {
-    wbn: string;
-    facility: string;
-    controllable_remark: string;
-    sub_remark: string;
-    put_remarks: string;
-    ntc: string;
-    client: string;
-    cs_sr: string;
-    not_put_wbns: string;
-    ageing_days: number;
-    ageing_bucket_hrs: string;
-    remark_combined: string;
-    put_combined: string;
-}
-
-interface B2BAnalysisResult {
-    summary: {
-        totalWBNs: number;
-        controllableBreakdown: { controllable_remark: string; sub_remark: string; count: number }[];
-        ageingBreakdown: { [key: string]: number };
-        putBreakdown: { [key: string]: number };
-    };
-    ntcSummary: { ntc: string; total_wbns: number; age_gt_96: number }[];
-    clientSummary: { client: string; total_wbns: number; age_gt_96: number }[];
-    detailedWBNs: B2BProcessedRow[];
-}
-
-type AnalysisResult = B2CAnalysisResult | B2BAnalysisResult;
-
-type SortOrder = 'asc' | 'desc';
-
-interface SortConfig<T> {
-    key: keyof T;
-    order: SortOrder;
-}
-
-// From: constants.ts
-const WBN_BASE_URL = "https://hq.delhivery.com/p/pntrzz/";
-const DEFAULT_FACILITY = "Hubli_Budarshingi_H (Karnataka)";
-const GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/1Du1zk0-urfz9aV9JQ-kaGUhowCHtT7cJ_Pl1tbmwtPw/edit?gid=597459867#gid=597459867";
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzuqx-eqUnx-sOUc0GeZHkabflWQMFSpI96jwfkm6Dc75tDfypYITPtWOsXb2uyJtsV/exec";
-
-// From: services/api.ts
-function parseCsvLine(line) {
-    const results = [];
-    const regex = /(?:^|,)(\"(?:[^\"]+|\"\")*\"|[^,]*)/g;
-    let match;
-    while ((match = regex.exec(line)) !== null) {
-        let value = match[1];
-        if (value.startsWith('"') && value.endsWith('"')) {
-            value = value.slice(1, -1).replace(/""/g, '"');
-        }
-        results.push(value.trim());
-    }
-    return results;
-}
-
-function analyzeB2CData(data) {
-    let df = data.filter(row => row.facility === DEFAULT_FACILITY);
-    if (df.length === 0) return null;
-
-    const processedDf = df.map(row => ({
-        ...row,
-        wbn: String(row.wbn || '').replace(/[^0-9]/g, ''),
-        sd_dif: parseFloat(row.sd_dif),
-        large: String(row.large || '').toUpperCase() === 'TRUE',
-        aging_bucket: row.aging_bucket || 'Unknown',
-        producttype: row.producttype || 'Unknown',
-        status: row.status || 'Unknown',
-        ndc: row.ndc || 'Unknown',
-        facility: row.facility
-    })).filter(row => !isNaN(row.sd_dif));
-
-    const totalWBNs = processedDf.length;
-    const ageBreakdown = processedDf.reduce((acc, row) => ({ ...acc, [row.aging_bucket]: (acc[row.aging_bucket] || 0) + 1 }), {});
-    const productBreakdown = processedDf.reduce((acc, row) => ({ ...acc, [row.producttype]: (acc[row.producttype] || 0) + 1 }), {});
-    const statusBreakdown = processedDf.reduce((acc, row) => ({ ...acc, [row.status]: (acc[row.status] || 0) + 1 }), {});
-
-    const ndcSummaryMap = processedDf.reduce((acc, row) => {
-        if (!acc[row.ndc]) acc[row.ndc] = { total_ageing_wbns: 0, age_gt_96: 0 };
-        acc[row.ndc].total_ageing_wbns++;
-        if (row.aging_bucket === '>96') acc[row.ndc].age_gt_96++;
-        return acc;
-    }, {});
+    const mainContainer = document.getElementById('main-container');
+    const inputSection = document.getElementById('inputSection');
+    const resultsContainer = document.getElementById('resultsContainer');
+    const messageArea = document.getElementById('messageArea');
+    const csvUpload = document.getElementById('csv-upload');
+    const uploadLabel = document.getElementById('upload-label');
+    const fileNameEl = document.getElementById('file-name');
     
-    const ndcSummary = Object.entries(ndcSummaryMap).map(([ndc, values]) => ({ ndc, ...values }))
-        .sort((a, b) => b.total_ageing_wbns - a.total_ageing_wbns);
+    // Modals
+    const copyModal = document.getElementById('copyModal');
+    const b2bCopyFilters = document.getElementById('b2b-copy-filters');
+    const copyColumnCheckboxes = document.getElementById('copy-column-checkboxes');
+    const cancelCopyBtn = document.getElementById('cancelCopyBtn');
+    const confirmCopyBtn = document.getElementById('confirmCopyBtn');
 
-    return {
-        summary: { totalWBNs, ageBreakdown, productBreakdown, statusBreakdown },
-        ndcSummary,
-        detailedWBNs: processedDf,
-    };
-}
-
-function analyzeB2BData(data) {
-    let df = data.filter(row => row.facility === DEFAULT_FACILITY);
-    if (df.length === 0) return null;
-
-    const processedDf = df.map(row => {
-        const ageing_days = parseFloat(row.ageing_days) || 0;
-        let ageing_bucket_hrs;
-        if (ageing_days < 2) ageing_bucket_hrs = '<48';
-        else if (ageing_days < 3) ageing_bucket_hrs = '48-72';
-        else if (ageing_days < 4) ageing_bucket_hrs = '72-96';
-        else ageing_bucket_hrs = '>96';
-
-        return {
-            ...row,
-            wbn: row.wbn || '',
-            facility: row.facility || '',
-            controllable_remark: row.controllable_remark || 'Unknown',
-            sub_remark: row.sub_remark || 'Unknown',
-            put_remarks: row.put_remarks || 'Unknown',
-            ntc: row.ntc || 'Unknown',
-            client: row.client || 'Unknown',
-            cs_sr: row.cs_sr || 'Unknown',
-            not_put_wbns: row.not_put_wbns || 'Unknown',
-            ageing_days: ageing_days,
-            ageing_bucket_hrs: ageing_bucket_hrs,
-            remark_combined: `${row.controllable_remark || 'Unknown'} | ${row.sub_remark || 'Unknown'}`,
-            put_combined: `${row.put_remarks || 'Unknown'} | ${row.not_put_wbns || 'Unknown'}`,
-        };
-    });
-
-    const totalWBNs = processedDf.length;
-    const controllableBreakdownMap = processedDf.reduce((acc, row) => {
-        const key = `${row.controllable_remark}__${row.sub_remark}`;
-        acc[key] = (acc[key] || 0) + 1;
-        return acc;
-    }, {});
-
-    const controllableBreakdown = Object.entries(controllableBreakdownMap).map(([key, count]) => {
-        const [controllable_remark, sub_remark] = key.split('__');
-        return { controllable_remark, sub_remark, count };
-    });
-    const ageingBreakdown = processedDf.reduce((acc, row) => ({ ...acc, [row.ageing_bucket_hrs]: (acc[row.ageing_bucket_hrs] || 0) + 1 }), {});
-    const putBreakdown = processedDf.reduce((acc, row) => ({ ...acc, [row.put_remarks]: (acc[row.put_remarks] || 0) + 1 }), {});
-
-    const controllable_df = processedDf.filter(row => row.controllable_remark === 'Controllable');
-    const ntcSummaryMap = controllable_df.reduce((acc, row) => {
-        if (!acc[row.ntc]) acc[row.ntc] = { total_wbns: 0, age_gt_96: 0 };
-        acc[row.ntc].total_wbns++;
-        if (row.ageing_bucket_hrs === '>96') acc[row.ntc].age_gt_96++;
-        return acc;
-    }, {});
-    const ntcSummary = Object.entries(ntcSummaryMap).map(([ntc, values]) => ({ ntc, ...values })).sort((a,b) => b.total_wbns - a.total_wbns);
-    
-    const clientSummaryMap = controllable_df.reduce((acc, row) => {
-        if (!acc[row.client]) acc[row.client] = { total_wbns: 0, age_gt_96: 0 };
-        acc[row.client].total_wbns++;
-        if (row.ageing_bucket_hrs === '>96') acc[row.client].age_gt_96++;
-        return acc;
-    }, {});
-    const clientSummary = Object.entries(clientSummaryMap).map(([client, values]) => ({ client, ...values })).sort((a,b) => b.total_wbns - a.total_wbns);
-        
-    return {
-        summary: { totalWBNs, controllableBreakdown, ageingBreakdown, putBreakdown },
-        ntcSummary, clientSummary, detailedWBNs: processedDf,
-    };
-}
-
-
-function processCsvData(csvString) {
-    try {
-        const lines = csvString.trim().split('\n');
-        const headerLine = lines[0].trim();
-        const rawHeaders = parseCsvLine(headerLine);
-        const headers = rawHeaders.map(h => h.replace(/[^a-zA-Z0-9_]/g, '').toLowerCase());
-
-        const data = lines.slice(1).map(line => {
-            const values = parseCsvLine(line.trim());
-            const obj = {};
-            headers.forEach((header, i) => {
-                obj[header] = values[i] || '';
-            });
-            return obj;
-        });
-
-        if (headers.includes('sd_dif') && headers.includes('ndc')) {
-            const result = analyzeB2CData(data);
-            if (result) return { type: 'b2c', data: result };
-            return { type: 'error', message: 'No valid B2C data found for the specified facility.' };
-        }
-        
-        if (headers.includes('ageing_days') && headers.includes('controllable_remark')) {
-            const result = analyzeB2BData(data);
-            if (result) return { type: 'b2b', data: result };
-            return { type: 'error', message: 'No valid B2B data found for the specified facility.' };
-        }
-        
-        return { type: 'error', message: 'Could not determine data type. Please upload a valid B2C or B2B ageing file.' };
-
-    } catch (error) {
-        console.error("Processing Error:", error);
-        const message = error instanceof Error ? error.message : 'An unknown error occurred.';
-        return { type: 'error', message: `An error occurred during processing: ${message}` };
-    }
-}
-
-
-async function syncWithGoogleSheet(type, data, timestamp) {
-    const payload = { 
-        type: type, 
-        data: data,
-        timestamp: timestamp 
-    };
-    
-    try {
-        await fetch(WEB_APP_URL, {
-            method: 'POST',
-            mode: 'no-cors', 
-            cache: 'no-cache',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        return { success: true };
-    } catch (error) {
-        console.error('Network or fetch error:', error);
-        return { success: false, error: 'Failed to send sync request. Check network connection.' };
-    }
-}
-
-// From: App.tsx
-const FileUpload = ({ onFileSelect, isLoading, error }) => {
-    const [isDragging, setIsDragging] = useState(false);
-    const [fileName, setFileName] = useState('');
-
-    const handleDragEnter = (e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); };
-    const handleDragLeave = (e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); };
-    const handleDragOver = (e) => { e.preventDefault(); e.stopPropagation(); };
-    const handleDrop = (e) => {
-        e.preventDefault(); e.stopPropagation(); setIsDragging(false);
-        const files = e.dataTransfer.files;
-        if (files && files.length > 0) handleFile(files[0]);
-    };
-    const handleChange = (e) => {
-        const files = e.target.files;
-        if (files && files.length > 0) handleFile(files[0]);
-    };
-    const handleFile = (file) => {
+    // --- File Upload and Processing ---
+    function handleFiles(files) {
+        const file = files[0];
         if (!file || !file.type.match('text/csv')) {
-            alert("Please upload a valid CSV file.");
+            if (file) showMessage("Please upload a valid CSV file.", true);
             return;
         }
-        setFileName(file.name);
-        onFileSelect(file);
-    };
+        fileNameEl.textContent = file.name;
+        fileTimestamp = file.lastModified; // <-- CAPTURE THE TIMESTAMP HERE
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            processData(event.target.result);
+        };
+        reader.onerror = () => {
+            showMessage("Error reading file.", true);
+        };
+        reader.readAsText(file);
+    }
 
-    const labelClasses = `w-full cursor-pointer bg-slate-900/50 hover:bg-slate-900/70 border-2 border-dashed border-slate-700 rounded-xl flex flex-col items-center justify-center p-12 transition-all duration-300 ${isDragging ? 'border-sky-400 scale-105' : ''}`;
+    csvUpload.addEventListener('change', (e) => handleFiles(e.target.files));
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        uploadLabel.addEventListener(eventName, (e) => { e.preventDefault(); e.stopPropagation(); }, false);
+    });
+    ['dragenter', 'dragover'].forEach(eventName => {
+        uploadLabel.addEventListener(eventName, () => uploadLabel.classList.add('bg-slate-700', 'border-blue-500'), false);
+    });
+    ['dragleave', 'drop'].forEach(eventName => {
+        uploadLabel.addEventListener(eventName, () => uploadLabel.classList.remove('bg-slate-700', 'border-blue-500'), false);
+    });
+    uploadLabel.addEventListener('drop', (e) => handleFiles(e.dataTransfer.files), false);
 
-    return (
-        <div className="h-full flex flex-col items-center justify-center text-center min-h-screen">
-            <h1 className="text-7xl md:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-violet-400 pb-2">AGE-SIGHT</h1>
-            <p className="mt-2 text-xl font-heading font-bold text-slate-300 tracking-widest">V 2.0</p>
-            <div className="w-full max-w-2xl mx-auto mt-12">
-                <label 
-                    htmlFor="csv-upload" 
-                    className={labelClasses}
-                    onDragEnter={handleDragEnter} onDragLeave={handleDragLeave} onDragOver={handleDragOver} onDrop={handleDrop}
-                >
-                    <svg className="w-16 h-16 text-slate-600 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5V9.75m0 0l-3 3m3-3l3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" /></svg>
-                    <span className="font-heading font-bold text-xl text-slate-300">Upload Ageing Data</span>
-                    <span className="text-sm text-slate-400 mt-1">{fileName || 'Drag & drop or click to select a CSV file'}</span>
-                </label>
-                <input type="file" id="csv-upload" className="hidden" accept=".csv, text/csv" onChange={handleChange} />
-            </div>
-            <div className="mt-6 text-center h-12">
-                {isLoading && <p className="mt-4 text-center p-3 rounded-md text-blue-200 bg-blue-900/40">Processing...</p>}
-                {error && <p className="mt-4 text-center p-3 rounded-md text-red-200 bg-red-900/40">{error}</p>}
-            </div>
-            <div className="mt-12">
-                <a href="https://rahulphari.github.io/age/" target="_blank" rel="noopener noreferrer" className="glow-button-v2 inline-block bg-gradient-to-r from-violet-600 to-sky-500 text-white font-bold py-4 px-8 rounded-lg shadow-lg transition-transform transform hover:scale-105">
-                    <span className="font-heading">🚀 AGE-SIGHT: Mission Control</span>
-                    <span className="text-xs font-normal block opacity-80 mt-1">Predictive Analysis & Report Generation</span>
+    function parseCsvLine(line) {
+        const results = [];
+        const regex = /(?:^|,)(\"(?:[^\"]+|\"\")*\"|[^,]*)/g;
+        let match;
+        while (match = regex.exec(line)) {
+            let value = match[1];
+            if (value.startsWith('"') && value.endsWith('"')) {
+                value = value.slice(1, -1).replace(/""/g, '"');
+            }
+            results.push(value.trim());
+        }
+        return results;
+    }
+
+    function processData(csvString) {
+        showMessage('Processing...', false);
+        
+        try {
+            const lines = csvString.trim().split('\n');
+            const headerLine = lines[0].trim();
+            const rawHeaders = parseCsvLine(headerLine);
+            const headers = rawHeaders.map(h => h.replace(/[^a-zA-Z0-9_]/g, '').toLowerCase());
+            
+            const data = lines.slice(1).map(line => {
+                const values = parseCsvLine(line.trim());
+                const obj = {};
+                headers.forEach((header, i) => {
+                    obj[header] = values[i] || '';
+                });
+                return obj;
+            });
+
+            if (headers.includes('sd_dif') && headers.includes('ndc')) {
+                fullB2CData = analyze_b2c_data(data);
+                if(fullB2CData) renderB2CDashboard(fullB2CData);
+                else showMessage('No valid B2C data found for the specified facility.', true);
+            } else if (headers.includes('ageing_days') && headers.includes('controllable_remark')) {
+                fullB2BData = analyze_b2b_data(data);
+                if(fullB2BData) renderB2BDashboard(fullB2BData);
+                else showMessage('No valid B2B data found for the specified facility.', true);
+            } else {
+                showMessage('Could not determine data type. Please upload a valid B2C or B2B ageing file.', true);
+            }
+        } catch (error) {
+            console.error("Processing Error:", error);
+            showMessage(`An error occurred during processing: ${error.message}`, true);
+        }
+    }
+
+    // --- ANALYSIS FUNCTIONS ---
+    function analyze_b2c_data(data) {
+        let df = data.filter(row => row.facility === DEFAULT_FACILITY);
+        if (df.length === 0) return null;
+
+        df = df.map(row => ({
+            ...row,
+            wbn: String(row.wbn || '').replace(/[^0-9]/g, ''),
+            sd_dif: parseFloat(row.sd_dif),
+            large: String(row.large || '').toUpperCase() === 'TRUE',
+            aging_bucket: row.aging_bucket || 'Unknown',
+            producttype: row.producttype || 'Unknown',
+            status: row.status || 'Unknown',
+            ndc: row.ndc || 'Unknown',
+        })).filter(row => !isNaN(row.sd_dif));
+
+        const totalWBNs = df.length;
+        const ageBreakdown = df.reduce((acc, row) => ({...acc, [row.aging_bucket]: (acc[row.aging_bucket] || 0) + 1}), {});
+        const productBreakdown = df.reduce((acc, row) => ({...acc, [row.producttype]: (acc[row.producttype] || 0) + 1}), {});
+        const statusBreakdown = df.reduce((acc, row) => ({...acc, [row.status]: (acc[row.status] || 0) + 1}), {});
+
+        const ndcSummaryMap = df.reduce((acc, row) => {
+            if (!acc[row.ndc]) acc[row.ndc] = { total_ageing_wbns: 0, age_gt_96: 0 };
+            acc[row.ndc].total_ageing_wbns++;
+            if (row.aging_bucket === '>96') acc[row.ndc].age_gt_96++;
+            return acc;
+        }, {});
+        const ndcSummary = Object.entries(ndcSummaryMap).map(([ndc, values]) => ({ ndc, ...values }))
+            .sort((a, b) => b.total_ageing_wbns - a.total_ageing_wbns);
+
+        return {
+            summary: { totalWBNs, ageBreakdown, productBreakdown, statusBreakdown },
+            ndcSummary,
+            detailedWBNs: df,
+        };
+    }
+
+    function analyze_b2b_data(data) {
+        let df = data.filter(row => row.facility === DEFAULT_FACILITY);
+        if (df.length === 0) return null;
+
+        df = df.map(row => {
+            const ageing_days = parseFloat(row.ageing_days) || 0;
+            let ageing_bucket_hrs;
+            if (ageing_days < 2) ageing_bucket_hrs = '<48';
+            else if (ageing_days < 3) ageing_bucket_hrs = '48-72';
+            else if (ageing_days < 4) ageing_bucket_hrs = '72-96';
+            else ageing_bucket_hrs = '>96';
+
+            return {
+                ...row,
+                controllable_remark: row.controllable_remark || 'Unknown',
+                sub_remark: row.sub_remark || 'Unknown',
+                put_remarks: row.put_remarks || 'Unknown',
+                ntc: row.ntc || 'Unknown',
+                client: row.client || 'Unknown',
+                cs_sr: row.cs_sr || 'Unknown',
+                not_put_wbns: row.not_put_wbns || 'Unknown',
+                ageing_days: ageing_days,
+                ageing_bucket_hrs: ageing_bucket_hrs,
+                remark_combined: `${row.controllable_remark || 'Unknown'} | ${row.sub_remark || 'Unknown'}`,
+                put_combined: `${row.put_remarks || 'Unknown'} | ${row.not_put_wbns || 'Unknown'}`,
+            };
+        });
+
+        const totalWBNs = df.length;
+        const controllableBreakdownMap = df.reduce((acc, row) => {
+            const key = `${row.controllable_remark}__${row.sub_remark}`;
+            acc[key] = (acc[key] || 0) + 1;
+            return acc;
+        }, {});
+        const controllableBreakdown = Object.entries(controllableBreakdownMap).map(([key, count]) => {
+            const [controllable_remark, sub_remark] = key.split('__');
+            return { controllable_remark, sub_remark, count };
+        });
+        const ageingBreakdown = df.reduce((acc, row) => ({...acc, [row.ageing_bucket_hrs]: (acc[row.ageing_bucket_hrs] || 0) + 1}), {});
+        const putBreakdown = df.reduce((acc, row) => ({...acc, [row.put_remarks]: (acc[row.put_remarks] || 0) + 1}), {});
+
+        const controllable_df = df.filter(row => row.controllable_remark === 'Controllable');
+        const ntcSummaryMap = controllable_df.reduce((acc, row) => {
+            if (!acc[row.ntc]) acc[row.ntc] = { total_wbns: 0, age_gt_96: 0 };
+            acc[row.ntc].total_wbns++;
+            if (row.ageing_bucket_hrs === '>96') acc[row.ntc].age_gt_96++;
+            return acc;
+        }, {});
+        const ntcSummary = Object.entries(ntcSummaryMap).map(([ntc, values]) => ({ ntc, ...values })).sort((a,b) => b.total_wbns - a.total_wbns);
+        const clientSummaryMap = controllable_df.reduce((acc, row) => {
+            if (!acc[row.client]) acc[row.client] = { total_wbns: 0, age_gt_96: 0 };
+            acc[row.client].total_wbns++;
+            if (row.ageing_bucket_hrs === '>96') acc[row.client].age_gt_96++;
+            return acc;
+        }, {});
+        const clientSummary = Object.entries(clientSummaryMap).map(([client, values]) => ({ client, ...values })).sort((a,b) => b.total_wbns - a.total_wbns);
+            
+        return {
+            summary: { totalWBNs, controllableBreakdown, ageingBreakdown, putBreakdown },
+            ntcSummary, clientSummary, detailedWBNs: df,
+        };
+    }
+
+    // --- RENDERERS ---
+    function renderB2CDashboard(data) {
+        inputSection.classList.add('hidden');
+        resultsContainer.classList.remove('hidden');
+        const dashboardId = 'b2c-dashboard';
+        const dashboardHtml = `
+            <div class="dashboard-header text-center relative">
+                <h1 class="text-4xl font-bold">B2C/Heavy Dashboard</h1>
+                <p class="mt-2 text-lg text-blue-200">Hubli_Budarshingi_H (Karnataka) Facility</p>
+                <a href="https://docs.google.com/spreadsheets/d/1Du1zk0-urfz9aV9JQ-kaGUhowCHtT7cJ_Pl1tbmwtPw/edit?gid=597459867#gid=597459867" target="_blank" class="absolute top-4 right-4 bg-white/10 hover:bg-white/20 text-white text-xs font-bold py-2 px-3 rounded-full transition-colors">
+                    <span>Open Sheet</span>
                 </a>
             </div>
-        </div>
-    );
-};
-
-const DashboardHeader = ({title, subtitle}) => (
-    <div className="relative text-center p-8 rounded-lg mb-8 border-b-2 border-sky-400/50">
-        <h1 className="text-5xl font-bold font-heading">{title}</h1>
-        <p className="mt-2 text-lg text-slate-400">{subtitle}</p>
-        <a href={GOOGLE_SHEET_URL} target="_blank" rel="noopener noreferrer" className="absolute top-4 right-4 bg-white/5 hover:bg-white/10 text-white text-xs font-bold py-2 px-3 rounded-full transition-colors">
-            <span>Open Sheet</span>
-        </a>
-    </div>
-);
-
-const Card = ({ children, className }) => (
-    <div className={'card-v2 p-6 ' + (className || '')}>
-        {children}
-    </div>
-);
-
-const SummaryCard = ({ title, value, onClick }) => (
-    <div onClick={onClick} className="card-v2 text-center p-4 cursor-pointer">
-        <p className="text-sm font-medium text-sky-400 font-heading tracking-wider">{title}</p>
-        <p className="text-5xl font-bold text-white mt-2">{value}</p>
-    </div>
-);
-
-const BreakdownGrid = ({ data, onFilter, filterKey, accentColor, gridCols = "sm:grid-cols-3" }) => (
-    <div className={'grid grid-cols-1 ' + gridCols + ' gap-4'}>
-        {Object.entries(data).map(([item, count]) => (
-            <div
-                key={item}
-                onClick={() => onFilter(filterKey, item)}
-                className={'card-v2 text-center p-3 cursor-pointer hover:!border-' + accentColor + '-500'}
-            >
-                <p className={'text-sm font-medium text-' + accentColor + '-400'}>{String(item).replace(/_/g, '-').replace('gt', '> ')}</p>
-                <p className={'text-2xl font-bold text-white mt-1'}>{count}</p>
-            </div>
-        ))}
-    </div>
-);
-
-const RightPaneSummary = ({ title, data, dataKeys, onFilter, filterKey, subtitle }) => (
-    <Card className="flex flex-col">
-        <h3 className="text-2xl font-bold text-slate-100 mb-1 font-heading">{title}</h3>
-        {subtitle && <p className="text-xs text-slate-400 mb-3">{subtitle}</p>}
-        <div className="scrollable-pane pr-2 flex-grow" style={{ maxHeight: '220px', overflowY: 'auto' }}>
-            {data.length === 0 ? <p className="text-slate-400 p-4">{'No ' + title.toLowerCase() + ' data available.'}</p> : (
-                <table className="data-table w-full text-sm">
-                    <thead>
-                        <tr>
-                            <th className="p-2 text-left">{title}</th>
-                            <th className="p-2 text-left">Total</th>
-                            <th className="p-2 text-left">&gt;96h</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {data.map((row, index) => (
-                            <tr key={index} onClick={() => onFilter(filterKey, String(row[dataKeys.main]))} className="cursor-pointer">
-                                <td className="font-bold text-slate-200 p-2 border-b border-slate-800">{String(row[dataKeys.main])}</td>
-                                <td className="p-2 border-b border-slate-800">{String(row[dataKeys.total])}</td>
-                                <td className={'p-2 border-b border-slate-800 ' + (row[dataKeys.highlight] > 0 ? 'text-red-400 font-bold' : '')}>{String(row[dataKeys.highlight])}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            )}
-        </div>
-    </Card>
-);
-
-const B2CDashboard = ({ data, onSync, syncStatus, onShowDetails, headers }) => {
-
-    const handleFilter = useCallback((key, value) => {
-        const filtered = data.detailedWBNs.filter(item => String(item[key]) === value);
-        onShowDetails(`Shipments for ${key.replace(/_/g, ' ')}: ${value}`, filtered, headers, 'b2c');
-    }, [data.detailedWBNs, onShowDetails, headers]);
-
-    const clearFilter = useCallback(() => {
-        onShowDetails('All Ageing Shipments', data.detailedWBNs, headers, 'b2c');
-    }, [data.detailedWBNs, onShowDetails, headers]);
-    
-    return (
-        <div className="space-y-8">
-            <DashboardHeader title="B2C/Heavy Dashboard" subtitle={`${DEFAULT_FACILITY} Facility`} />
-             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <Card>
-                    <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-3xl font-bold text-slate-100 font-heading">Ageing Summary</h2>
-                         <button onClick={onSync} disabled={syncStatus !== 'idle'} className="bg-orange-600 hover:bg-orange-700 disabled:bg-orange-800/50 disabled:cursor-not-allowed text-white text-sm font-bold py-2 px-4 rounded-full transition-colors">
-                           {syncStatus === 'idle' ? 'Sync with Sheet' : (syncStatus === 'syncing' ? 'Syncing...' : 'Sync Sent!')}
-                        </button>
-                    </div>
-                    <div className="space-y-6">
-                        <SummaryCard title="Total Ageing WBNs" value={data.summary.totalWBNs} onClick={clearFilter} />
-                        <div>
-                            <h4 className="text-sm font-bold uppercase text-slate-400 mb-2 tracking-wider">Ageing Breakdown</h4>
-                            <BreakdownGrid data={data.summary.ageBreakdown} onFilter={handleFilter} filterKey="aging_bucket" accentColor="red" />
-                        </div>
-                        <div>
-                            <h4 className="text-sm font-bold uppercase text-slate-400 mb-2 tracking-wider">Product Type</h4>
-                            <BreakdownGrid data={data.summary.productBreakdown} onFilter={handleFilter} filterKey="producttype" accentColor="green" gridCols="sm:grid-cols-2" />
-                        </div>
-                         <div>
-                            <h4 className="text-sm font-bold uppercase text-slate-400 mb-2 tracking-wider">Status</h4>
-                            <BreakdownGrid data={data.summary.statusBreakdown} onFilter={handleFilter} filterKey="status" accentColor="yellow" />
+            <div id="${dashboardId}" class="space-y-8 dashboard-instance">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="card">
+                        <h2 class="text-2xl font-bold text-slate-100 mb-4">Ageing Summary</h2>
+                        <div class="space-y-6">
+                            <div class="summary-card text-center bg-slate-700/50 rounded-lg p-4" data-type="b2c" data-filter-key="all">
+                                <p class="text-sm font-medium text-blue-400">Total Ageing WBNs</p>
+                                <p class="text-4xl font-bold text-white mt-2">${data.summary.totalWBNs}</p>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-bold uppercase text-slate-400 mb-2 tracking-wider">Ageing Breakdown</h4>
+                                <div id="b2c-ageing-breakdown" class="grid grid-cols-1 sm:grid-cols-3 gap-4"></div>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-bold uppercase text-slate-400 mb-2 tracking-wider">Product Type</h4>
+                                <div id="b2c-product-breakdown" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-bold uppercase text-slate-400 mb-2 tracking-wider">Status</h4>
+                                <div id="b2c-status-breakdown" class="grid grid-cols-1 sm:grid-cols-3 gap-4"></div>
+                            </div>
                         </div>
                     </div>
-                </Card>
-                <div className="flex flex-col">
-                    <RightPaneSummary
-                        title="NDC Breakdown"
-                        data={data.ndcSummary}
-                        dataKeys={{ main: 'ndc', total: 'total_ageing_wbns', highlight: 'age_gt_96' }}
-                        onFilter={handleFilter}
-                        filterKey="ndc"
-                    />
+                    <div class="card flex flex-col">
+                        <h3 class="text-2xl font-bold text-slate-100 mb-4">NDC Breakdown</h3>
+                        <div class="scrollable-pane pr-2 flex-grow" style="max-height: 520px; overflow-y: auto;" id="b2c-ndc-summary"></div>
+                    </div>
                 </div>
+                <div class="card">
+                    <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+                        <h3 id="b2c-detailed-title" class="text-xl font-bold text-slate-200">All Ageing Shipments</h3>
+                        <div class="flex items-center gap-2">
+                            <button class="sync-sheet-btn bg-orange-600 hover:bg-orange-700 text-white text-sm font-bold py-2 px-4 rounded-full" data-type="b2c">Sync with Sheet</button>
+                            <button class="copy-button bg-green-600 hover:bg-green-700 text-white text-sm font-bold py-2 px-4 rounded-full" data-type="b2c">Copy Table Data</button>
+                        </div>
+                    </div>
+                    <input type="text" class="magic-filter w-full bg-slate-700 border border-slate-600 rounded-md p-2 text-slate-200 placeholder-slate-400" placeholder="Magic Filter: Search WBN, NDC, Status..." data-type="b2c">
+                    <div id="b2c-detailed-table" class="overflow-x-auto"></div>
+                </div>
+            </div>`;
+        resultsContainer.innerHTML = dashboardHtml;
+        renderBreakdownCards('b2c', 'aging_bucket', data.summary.ageBreakdown, 'b2c-ageing-breakdown', 'bg-red-900/30', 'text-red-300');
+        renderBreakdownCards('b2c', 'producttype', data.summary.productBreakdown, 'b2c-product-breakdown', 'bg-green-900/30', 'text-green-300');
+        renderBreakdownCards('b2c', 'status', data.summary.statusBreakdown, 'b2c-status-breakdown', 'bg-yellow-900/30', 'text-yellow-300');
+        renderRightPaneSummary('b2c', 'ndc', 'NDC', data.ndcSummary, 'b2c-ndc-summary');
+        renderB2CTable(data.detailedWBNs, 'All Ageing Shipments');
+    }
+
+    function renderB2CTable(wbnData, title) {
+        const container = document.getElementById('b2c-detailed-table');
+        const titleEl = document.getElementById('b2c-detailed-title');
+        const count = wbnData ? wbnData.length : 0;
+        titleEl.textContent = `${title} ( ${count} WBNs )`;
+
+        if (count === 0) {
+            container.innerHTML = `<p class="text-slate-400 p-4">No data available.</p>`;
+            return;
+        }
+        const table = document.createElement('table');
+        table.className = 'data-table';
+        table.innerHTML = `
+            <thead>
+                <tr>
+                    <th data-type="b2c" data-sort-key="wbn">WBN <span class="sort-icon">▲</span></th>
+                    <th data-type="b2c" data-sort-key="sd_dif">Ageing (hrs) <span class="sort-icon">▲</span></th>
+                    <th data-type="b2c" data-sort-key="ndc">NDC <span class="sort-icon">▲</span></th>
+                    <th data-type="b2c" data-sort-key="status">Status <span class="sort-icon">▲</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                ${wbnData.map(wbn => `
+                    <tr data-wbn="${wbn.wbn}">
+                        <td><a href="${WBN_BASE_URL}${wbn.wbn}" target="_blank" class="text-blue-400 hover:underline">${wbn.wbn}</a>
+                            ${wbn.producttype === 'Heavy' ? '<span class="shipment-indicator indicator-h">H</span>' : ''}
+                            ${wbn.large ? '<span class="shipment-indicator indicator-l">L</span>' : ''}
+                        </td>
+                        <td>${parseFloat(wbn.sd_dif).toFixed(2)}</td>
+                        <td>${wbn.ndc}</td>
+                        <td>${wbn.status}</td>
+                    </tr>`).join('')}
+            </tbody>`;
+        container.innerHTML = '';
+        container.appendChild(table);
+        updateSortIcons('b2c');
+    }
+
+    function renderB2BDashboard(data) {
+        inputSection.classList.add('hidden');
+        resultsContainer.classList.remove('hidden');
+        const dashboardId = 'b2b-dashboard';
+        const dashboardHtml = `
+            <div class="dashboard-header text-center relative">
+                <h1 class="text-4xl font-bold">B2B (To Connect) Dashboard</h1>
+                <p class="mt-2 text-lg text-blue-200">Hubli_Budarshingi_H (Karnataka) Facility</p>
+                <a href="https://docs.google.com/spreadsheets/d/1Du1zk0-urfz9aV9JQ-kaGUhowCHtT7cJ_Pl1tbmwtPw/edit?gid=597459867#gid=597459867" target="_blank" class="absolute top-4 right-4 bg-white/10 hover:bg-white/20 text-white text-xs font-bold py-2 px-3 rounded-full transition-colors">
+                    <span>Open Sheet</span>
+                </a>
             </div>
-        </div>
-    );
-}
-
-const B2BDashboard = ({ data, onSync, syncStatus, onShowDetails, headers }) => {
-
-    const handleFilter = useCallback((key, value) => {
-        const filtered = data.detailedWBNs.filter(item => String(item[key]) === value);
-        onShowDetails(`Shipments for ${key.replace(/_/g, ' ')}: ${value}`, filtered, headers, 'b2b');
-    }, [data.detailedWBNs, onShowDetails, headers]);
-
-    const clearFilter = useCallback(() => {
-        onShowDetails('All Pending Shipments', data.detailedWBNs, headers, 'b2b');
-    }, [data.detailedWBNs, onShowDetails, headers]);
-
-    const controllableGroups = useMemo(() => {
-        return data.summary.controllableBreakdown.reduce((acc, item) => {
+            <div id="${dashboardId}" class="space-y-8 dashboard-instance">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="card">
+                        <h3 class="text-2xl font-bold text-slate-100 mb-4">Pending WBNs Summary</h3>
+                        <div class="space-y-4">
+                            <div class="summary-card text-center bg-slate-700/50 rounded-lg p-4" data-type="b2b" data-filter-key="all">
+                                <p class="text-sm font-medium text-blue-400">Total Pending WBNs</p>
+                                <p class="text-4xl font-bold text-white mt-2">${data.summary.totalWBNs}</p>
+                            </div>
+                            <div id="b2b-controllable-breakdown"></div>
+                            <div>
+                                <h4 class="text-xs font-bold uppercase text-slate-400 mb-2 tracking-wider">Ageing Breakdown</h4>
+                                <div id="b2b-ageing-breakdown" class="grid grid-cols-2 sm:grid-cols-4 gap-4"></div>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-bold uppercase text-slate-400 mb-2 tracking-wider">Put Remark Breakdown</h4>
+                                <div id="b2b-put-breakdown" class="grid grid-cols-1 sm:grid-cols-3 gap-4"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-8">
+                        <div class="card flex flex-col">
+                            <h3 class="text-xl font-bold text-slate-100 mb-1">NTC Breakdown</h3>
+                            <p class="text-xs text-slate-400 mb-3">(Controllable Ageing Only)</p>
+                            <div class="scrollable-pane pr-2 flex-grow" style="max-height: 220px; overflow-y: auto;" id="b2b-ntc-summary"></div>
+                        </div>
+                        <div class="card flex flex-col">
+                            <h3 class="text-xl font-bold text-slate-100 mb-1">Client Breakdown</h3>
+                            <p class="text-xs text-slate-400 mb-3">(Controllable Ageing Only)</p>
+                            <div class="scrollable-pane pr-2 flex-grow" style="max-height: 220px; overflow-y: auto;" id="b2b-client-summary"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+                        <h3 id="b2b-detailed-title" class="text-xl font-bold text-slate-200">All Pending Shipments</h3>
+                         <div class="flex items-center gap-2">
+                            <button class="sync-sheet-btn bg-orange-600 hover:bg-orange-700 text-white text-sm font-bold py-2 px-4 rounded-full" data-type="b2b">Sync with Sheet</button>
+                            <button class="copy-button bg-green-600 hover:bg-green-700 text-white text-sm font-bold py-2 px-4 rounded-full" data-type="b2b">Copy Table Data</button>
+                        </div>
+                    </div>
+                       <input type="text" class="magic-filter w-full bg-slate-700 border border-slate-600 rounded-md p-2 text-slate-200 placeholder-slate-400" placeholder="Magic Filter: Search WBN, NTC, Client, Remark..." data-type="b2b">
+                    <div id="b2b-detailed-table" class="overflow-x-auto"></div>
+                </div>
+            </div>`;
+        resultsContainer.innerHTML = dashboardHtml;
+        
+        const controllableContainer = document.getElementById('b2b-controllable-breakdown');
+        const controllableGroups = data.summary.controllableBreakdown.reduce((acc, item) => {
             const key = item.controllable_remark;
-            if (!acc[key]) {
-                acc[key] = [];
-            }
+            if (!acc[key]) acc[key] = [];
             acc[key].push(item);
             return acc;
         }, {});
-    }, [data.summary.controllableBreakdown]);
+
+        let controllableHtml = '<h4 class="text-xs font-bold uppercase text-slate-400 mb-2 tracking-wider">Controllable Breakdown</h4>';
+        for (const [remark, items] of Object.entries(controllableGroups)) {
+            const total = items.reduce((sum, i) => sum + i.count, 0);
+            controllableHtml += `
+                <div class="border border-slate-700 rounded-lg p-3">
+                    <div class="summary-card flex justify-between items-center" data-type="b2b" data-filter-key="controllable_remark" data-filter-value="${remark}">
+                        <span class="font-bold text-slate-200">${remark}</span>
+                        <span class="font-bold text-xl text-blue-400">${total}</span>
+                    </div>
+                    <div class="pl-4 mt-2 space-y-1">
+                        ${items.map(item => `
+                            <div class="summary-card flex justify-between items-center text-sm" data-type="b2b" data-filter-key="sub_remark" data-filter-value="${item.sub_remark}">
+                                <span class="text-slate-300">${item.sub_remark}</span>
+                                <span class="text-slate-100 font-medium">${item.count}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>`;
+        }
+        controllableContainer.innerHTML = controllableHtml;
+
+        renderBreakdownCards('b2b', 'ageing_bucket_hrs', data.summary.ageingBreakdown, 'b2b-ageing-breakdown', 'bg-red-900/30', 'text-red-300');
+        renderBreakdownCards('b2b', 'put_remarks', data.summary.putBreakdown, 'b2b-put-breakdown', 'bg-yellow-900/30', 'text-yellow-300');
+        renderRightPaneSummary('b2b', 'ntc', 'NTC', data.ntcSummary, 'b2b-ntc-summary');
+        renderRightPaneSummary('b2b', 'client', 'Client', data.clientSummary, 'b2b-client-summary');
+        renderB2BTable(data.detailedWBNs, 'All Pending Shipments');
+    }
     
-    return (
-        <div className="space-y-8">
-            <DashboardHeader title="B2B (To Connect) Dashboard" subtitle={`${DEFAULT_FACILITY} Facility`} />
-             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <Card>
-                    <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-3xl font-bold text-slate-100 font-heading">Pending WBNs Summary</h3>
-                        <button onClick={onSync} disabled={syncStatus !== 'idle'} className="bg-orange-600 hover:bg-orange-700 disabled:bg-orange-800/50 disabled:cursor-not-allowed text-white text-sm font-bold py-2 px-4 rounded-full transition-colors">
-                           {syncStatus === 'idle' ? 'Sync with Sheet' : (syncStatus === 'syncing' ? 'Syncing...' : 'Sync Sent!')}
-                        </button>
-                    </div>
-                    <div className="space-y-4">
-                        <SummaryCard title="Total Pending WBNs" value={data.summary.totalWBNs} onClick={clearFilter} />
-                        <div>
-                            <h4 className="text-sm font-bold uppercase text-slate-400 mb-2 tracking-wider">Controllable Breakdown</h4>
-                             {Object.entries(controllableGroups).map(([remark, items]) => (
-                                <div key={remark} className="card-v2 p-3 mb-2 !border-slate-700">
-                                    <div onClick={() => handleFilter('controllable_remark', remark)} className="flex justify-between items-center cursor-pointer p-2">
-                                        <span className="font-bold text-slate-200">{remark}</span>
-                                        <span className="font-bold text-2xl text-sky-400">{items.reduce((sum, i) => sum + i.count, 0)}</span>
-                                    </div>
-                                    <div className="pl-4 mt-2 space-y-1">
-                                        {items.map(item => (
-                                            <div key={item.sub_remark} onClick={() => handleFilter('sub_remark', item.sub_remark)} className="flex justify-between items-center text-sm cursor-pointer p-2 rounded-md hover:bg-white/5">
-                                                <span className="text-slate-300">{item.sub_remark}</span>
-                                                <span className="text-slate-100 font-medium">{item.count}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                        <div>
-                            <h4 className="text-sm font-bold uppercase text-slate-400 mb-2 tracking-wider">Ageing Breakdown</h4>
-                            <BreakdownGrid data={data.summary.ageingBreakdown} onFilter={handleFilter} filterKey="ageing_bucket_hrs" accentColor="red" gridCols="sm:grid-cols-4" />
-                        </div>
-                        <div>
-                            <h4 className="text-sm font-bold uppercase text-slate-400 mb-2 tracking-wider">Put Remark Breakdown</h4>
-                            <BreakdownGrid data={data.summary.putBreakdown} onFilter={handleFilter} filterKey="put_remarks" accentColor="yellow" />
-                        </div>
-                    </div>
-                </Card>
-                <div className="space-y-8">
-                    <RightPaneSummary title="NTC Breakdown" subtitle="(Controllable Ageing Only)" data={data.ntcSummary} dataKeys={{ main: 'ntc', total: 'total_wbns', highlight: 'age_gt_96' }} onFilter={handleFilter} filterKey="ntc" />
-                    <RightPaneSummary title="Client Breakdown" subtitle="(Controllable Ageing Only)" data={data.clientSummary} dataKeys={{ main: 'client', total: 'total_wbns', highlight: 'age_gt_96' }} onFilter={handleFilter} filterKey="client" />
-                </div>
-            </div>
-        </div>
-    );
-};
+    function renderB2BTable(wbnData, title) {
+        const container = document.getElementById('b2b-detailed-table');
+        const titleEl = document.getElementById('b2b-detailed-title');
+        const count = wbnData ? wbnData.length : 0;
+        titleEl.textContent = `${title} ( ${count} WBNs )`;
 
-const DetailsModal = ({ title, data, headers, type, onClose, renderRow, onShowCopy }) => {
-    const defaultSortKey = type === 'b2c' ? 'sd_dif' : 'ageing_days';
-    const [sortConfig, setSortConfig] = useState({ key: defaultSortKey, order: 'desc' });
-    const [searchTerm, setSearchTerm] = useState('');
+        if (count === 0) {
+            container.innerHTML = `<p class="text-slate-400 p-4">No data available for this selection.</p>`;
+            return;
+        }
+        const table = document.createElement('table');
+        table.className = 'data-table';
+        table.innerHTML = `
+            <thead>
+                <tr>
+                    <th data-type="b2b" data-sort-key="wbn">WBN <span class="sort-icon">▲</span></th>
+                    <th data-type="b2b" data-sort-key="ntc">NTC <span class="sort-icon">▲</span></th>
+                    <th data-type="b2b" data-sort-key="ageing_days">Ageing (Days) <span class="sort-icon">▲</span></th>
+                    <th data-type="b2b" data-sort-key="remark_combined">Remark <span class="sort-icon">▲</span></th>
+                    <th data-type="b2b" data-sort-key="cs_sr">CS SR <span class="sort-icon">▲</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                ${wbnData.map(wbn => `
+                    <tr data-wbn="${wbn.wbn}">
+                        <td><a href="${WBN_BASE_URL}${wbn.wbn}" target="_blank" class="text-blue-400 hover:underline">${wbn.wbn}</a></td>
+                        <td>${wbn.ntc}</td>
+                        <td>${wbn.ageing_days.toFixed(0)}</td>
+                        <td>${wbn.remark_combined}</td>
+                        <td>${wbn.cs_sr}</td>
+                    </tr>`).join('')}
+            </tbody>`;
+        container.innerHTML = '';
+        container.appendChild(table);
+        updateSortIcons('b2b');
+    }
 
-    const handleSort = useCallback((key) => {
-        setSortConfig(prev => ({ key, order: prev.key === key && prev.order === 'desc' ? 'asc' : 'desc' }));
-    }, []);
+    // --- GENERIC RENDERERS ---
+    function renderBreakdownCards(type, key, breakdownData, containerId, cardColor, textColor) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+        if (!breakdownData || Object.keys(breakdownData).length === 0) return;
+        for (const [item, count] of Object.entries(breakdownData)) {
+            const card = document.createElement('div');
+            card.className = `summary-card text-center p-3 rounded-lg ${cardColor}`;
+            card.dataset.type = type;
+            card.dataset.filterKey = key;
+            card.dataset.filterValue = item;
+            card.innerHTML = `<p class="text-sm font-medium ${textColor}">${String(item).replace(/_/g, '-').replace('gt', '> ')}</p><p class="text-2xl font-bold ${textColor} mt-1">${count}</p>`;
+            container.appendChild(card);
+        }
+    }
 
-    const filteredAndSortedData = useMemo(() => {
-        let items = [...data];
-        if (searchTerm) {
-            const lowercasedTerm = searchTerm.toLowerCase();
-            items = items.filter(item => 
-                Object.values(item).some(val => 
-                    String(val).toLowerCase().includes(lowercasedTerm)
-                )
-            );
+    function renderRightPaneSummary(type, key, title, data, containerId) {
+        const container = document.getElementById(containerId);
+        if (!data || data.length === 0) {
+            container.innerHTML = `<p class="text-slate-400 p-4">No ${title} data available.</p>`;
+            return;
+        }
+        const table = document.createElement('table');
+        table.className = 'data-table text-sm';
+        table.innerHTML = `
+            <thead><tr><th>${title}</th><th>Total</th><th>>96h</th></tr></thead>
+            <tbody>
+                ${data.map(row => `
+                    <tr class="summary-row cursor-pointer hover:bg-slate-700" data-type="${type}" data-key="${key}" data-value="${row[key]}">
+                        <td class="font-bold text-slate-200">${row[key]}</td>
+                        <td>${row.total_wbns || row.total_ageing_wbns}</td>
+                        <td class="${row.age_gt_96 > 0 ? 'text-red-400 font-bold' : ''}">${row.age_gt_96}</td>
+                    </tr>`).join('')}
+            </tbody>`;
+        container.innerHTML = '';
+        container.appendChild(table);
+    }
+    
+    // --- EVENT LISTENERS ---
+    resultsContainer.addEventListener('input', (e) => {
+        if(e.target.classList.contains('magic-filter')) {
+            clearTimeout(magicFilterDebounce);
+            magicFilterDebounce = setTimeout(() => {
+                const type = e.target.dataset.type;
+                const searchTerm = e.target.value.toLowerCase();
+                let dataToFilter = (type === 'b2c' ? fullB2CData : fullB2BData).detailedWBNs;
+                
+                const filtered = dataToFilter.filter(row => {
+                    if(type === 'b2c') {
+                        return row.wbn.includes(searchTerm) ||
+                               row.ndc.toLowerCase().includes(searchTerm) ||
+                               row.producttype.toLowerCase().includes(searchTerm) ||
+                               row.status.toLowerCase().includes(searchTerm);
+                    } else { // b2b
+                        return row.wbn.includes(searchTerm) ||
+                               row.ntc.toLowerCase().includes(searchTerm) ||
+                               row.client.toLowerCase().includes(searchTerm) ||
+                               row.remark_combined.toLowerCase().includes(searchTerm);
+                    }
+                });
+
+                const title = searchTerm ? `Search results for "${e.target.value}"` : (type === 'b2c' ? 'All Ageing Shipments' : 'All Pending Shipments');
+                if(type === 'b2c') renderB2CTable(filtered, title);
+                else renderB2BTable(filtered, title);
+
+            }, 300);
+        }
+    });
+
+    resultsContainer.addEventListener('click', (e) => {
+        const summaryTarget = e.target.closest('.summary-card, .summary-row');
+        if(summaryTarget) {
+            const type = summaryTarget.dataset.type;
+            const filterKey = summaryTarget.dataset.key || summaryTarget.dataset.filterKey;
+            const filterValue = summaryTarget.dataset.value || summaryTarget.dataset.filterValue;
+
+            const magicFilterInput = document.querySelector(`#${type}-dashboard .magic-filter`);
+            if(magicFilterInput) magicFilterInput.value = '';
+
+            if (type === 'b2c') {
+                let filteredData = fullB2CData.detailedWBNs;
+                if (filterKey !== 'all') {
+                    filteredData = filteredData.filter(wbn => String(wbn[filterKey]) === filterValue);
+                }
+                const title = filterKey === 'all' ? 'All Ageing Shipments' : `Shipments for ${filterKey.toUpperCase()}: ${filterValue}`;
+                renderB2CTable(sortData(type, filteredData, currentSorts[type].key, currentSorts[type].order), title);
+            } else if (type === 'b2b') {
+                let filteredData = fullB2BData.detailedWBNs;
+                if (filterKey !== 'all') {
+                    filteredData = filteredData.filter(wbn => String(wbn[filterKey]) === filterValue);
+                }
+                const title = filterKey === 'all' ? 'All Pending Shipments' : `Shipments for ${filterKey.toUpperCase()}: ${filterValue}`;
+                renderB2BTable(sortData(type, filteredData, currentSorts[type].key, currentSorts[type].order), title);
+            }
+            return;
         }
 
-        return items.sort((a, b) => {
-            const valA = a[sortConfig.key];
-            const valB = b[sortConfig.key];
-            if (typeof valA === 'number' && typeof valB === 'number') {
-                return sortConfig.order === 'asc' ? valA - valB : valB - valA;
+        const th = e.target.closest('th[data-sort-key]');
+        if (th) {
+            const { type, sortKey } = th.dataset;
+            const current = currentSorts[type];
+            const order = (current.key === sortKey && current.order === 'desc') ? 'asc' : 'desc';
+            currentSorts[type] = { key: sortKey, order: order };
+
+            const title = document.getElementById(`${type}-detailed-title`).textContent.split(' (')[0];
+            const wbnElements = document.querySelectorAll(`#${type}-detailed-table tbody tr`);
+            const fullDataset = (type === 'b2b' ? fullB2BData : fullB2CData).detailedWBNs;
+            
+            const currentWBNsOnScreen = Array.from(wbnElements).map(row => {
+                const wbnValue = row.dataset.wbn;
+                return fullDataset.find(d => d.wbn == wbnValue);
+            }).filter(Boolean);
+
+            if (type === 'b2c') {
+                renderB2CTable(sortData(type, currentWBNsOnScreen, sortKey, order), title);
+            } else if (type === 'b2b') {
+                renderB2BTable(sortData(type, currentWBNsOnScreen, sortKey, order), title);
             }
-            return sortConfig.order === 'asc' ? String(valA).localeCompare(String(valB)) : String(valB).localeCompare(String(valA));
-        });
-    }, [data, searchTerm, sortConfig]);
-
-    return (
-        <div className="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4 transition-opacity">
-            <div className="card-v2 p-6 w-full max-w-7xl max-h-[90vh] flex flex-col">
-                <div className="flex justify-between items-center mb-4 pb-4 border-b border-slate-700 gap-4 flex-wrap">
-                    <h3 className="text-3xl font-bold text-white font-heading">{title} ( {filteredAndSortedData.length} WBNs )</h3>
-                    <div className="flex items-center gap-2">
-                         <input 
-                            type="text" 
-                            value={searchTerm}
-                            onChange={e => { setSearchTerm(e.target.value); }}
-                            className="w-64 bg-slate-900/80 border border-slate-700 rounded-md py-2 px-3 text-slate-200 placeholder-slate-400 focus:ring-2 focus:ring-sky-500 focus:outline-none" 
-                            placeholder="Magic Filter..."
-                        />
-                        <button onClick={() => onShowCopy(filteredAndSortedData, headers, type)} className="bg-green-600 hover:bg-green-700 text-white text-sm font-bold py-2 px-4 rounded-full transition-colors">Copy Data</button>
-                        <button onClick={onClose} className="text-4xl font-light text-slate-400 hover:text-white leading-none">&times;</button>
-                    </div>
-                </div>
-                <div className="overflow-y-auto scrollable-pane">
-                    <table className="data-table w-full">
-                        <thead className="sticky top-0 z-10">
-                            <tr>
-                                {headers.map(header => (
-                                    <th
-                                        key={String(header.key)}
-                                        onClick={() => handleSort(header.key)}
-                                        className={'p-3 text-left cursor-pointer ' + (sortConfig.key === header.key ? (sortConfig.order === 'asc' ? 'sorted-asc' : 'sorted-desc') : '')}
-                                    >
-                                        {header.label} <span className="sort-icon">▲</span>
-                                    </th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredAndSortedData.map(item => renderRow(item))}
-                        </tbody>
-                    </table>
-                     {filteredAndSortedData.length === 0 && <p className="text-slate-400 p-4 text-center">No data available for this selection.</p>}
-                </div>
-            </div>
-        </div>
-    );
-};
-
-const CopyModal = ({ data, headers, type, onClose }) => {
-    const [selectedColumns, setSelectedColumns] = useState(new Set(headers.map(h => String(h.key))));
-    const [b2bFilter, setB2bFilter] = useState('Both');
-    const [copyStatus, setCopyStatus] = useState('Copy Selected Data');
-
-    const handleColumnToggle = (key) => {
-        setSelectedColumns(prev => {
-            const newSet = new Set(prev);
-            if (newSet.has(key)) newSet.delete(key);
-            else newSet.add(key);
-            return newSet;
-        });
-    };
-
-    const handleCopy = () => {
-        let rowsToCopy = data;
-        if (type === 'b2b') {
-            if (b2bFilter !== 'Both') {
-                rowsToCopy = (rowsToCopy).filter(row => row.controllable_remark === b2bFilter);
-            }
+            return;
         }
-
-        const activeHeaders = headers.filter(h => selectedColumns.has(String(h.key)));
-        const headerString = activeHeaders.map(h => h.label).join('\t');
         
-        const dataString = rowsToCopy.map(row => {
-            return activeHeaders.map(h => row[h.key]).join('\t');
+        const copyBtn = e.target.closest('.copy-button');
+        if(copyBtn) {
+            openCopyModal(copyBtn.dataset.type);
+            return;
+        }
+
+        const syncBtn = e.target.closest('.sync-sheet-btn');
+        if(syncBtn) {
+            const type = syncBtn.dataset.type;
+            if (type === 'b2c' && fullB2CData) {
+                syncWithGoogleSheet('b2c', fullB2CData.detailedWBNs);
+            } else if (type === 'b2b' && fullB2BData) {
+                syncWithGoogleSheet('b2b', fullB2BData.detailedWBNs);
+            }
+            return;
+        }
+    });
+    
+    // --- COPY MODAL LOGIC ---
+    function openCopyModal(type) {
+        const table = document.querySelector(`#${type}-detailed-table table`);
+        if (!table) return;
+
+        const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent.trim().replace(' ▲', ''));
+        copyColumnCheckboxes.innerHTML = headers.map((header, index) => `
+            <label class="flex items-center space-x-2 text-slate-300 cursor-pointer">
+                <input type="checkbox" checked class="form-checkbox bg-slate-700 border-slate-500 rounded text-blue-500" data-index="${index}" data-header="${header}">
+                <span>${header}</span>
+            </label>
+        `).join('');
+
+        if (type === 'b2b') {
+            b2bCopyFilters.classList.remove('hidden');
+        } else {
+            b2bCopyFilters.classList.add('hidden');
+        }
+        
+        copyModal.dataset.type = type;
+        copyModal.classList.remove('hidden');
+        copyModal.classList.add('flex');
+    }
+
+    cancelCopyBtn.addEventListener('click', () => {
+        copyModal.classList.add('hidden');
+        copyModal.classList.remove('flex');
+    });
+    
+    b2bCopyFilters.addEventListener('click', (e) => {
+        if(e.target.classList.contains('copy-filter-btn')) {
+            b2bCopyFilters.querySelectorAll('.copy-filter-btn').forEach(btn => btn.classList.remove('active'));
+            e.target.classList.add('active');
+        }
+    });
+
+    confirmCopyBtn.addEventListener('click', () => {
+        const type = copyModal.dataset.type;
+        const table = document.querySelector(`#${type}-detailed-table table`);
+        if (!table) return;
+        
+        const selectedIndices = Array.from(copyColumnCheckboxes.querySelectorAll('input:checked')).map(cb => parseInt(cb.dataset.index));
+        const selectedHeaders = Array.from(copyColumnCheckboxes.querySelectorAll('input:checked')).map(cb => cb.dataset.header);
+
+        let rowsToCopy = Array.from(table.querySelectorAll('tbody tr'));
+
+        if (type === 'b2b') {
+            const filterType = b2bCopyFilters.querySelector('.active').dataset.filter;
+            if (filterType !== 'Both') {
+                const remarkIndex = Array.from(table.querySelectorAll('thead th')).findIndex(th => th.dataset.sortKey === 'remark_combined');
+                if (remarkIndex !== -1) {
+                    rowsToCopy = rowsToCopy.filter(row => {
+                        const remark = row.cells[remarkIndex].textContent;
+                        return remark.toLowerCase().startsWith(filterType.toLowerCase());
+                    });
+                }
+            }
+        }
+
+        const dataToCopy = rowsToCopy.map(row => {
+            return selectedIndices.map(index => row.cells[index].textContent.trim()).join('\t');
         }).join('\n');
 
-        navigator.clipboard.writeText(`${headerString}\n${dataString}`).then(() => {
-            setCopyStatus('Copied!');
-            setTimeout(() => onClose(), 1500);
-        });
-    };
+        const finalString = `${selectedHeaders.join('\t')}\n${dataToCopy}`;
+        copyToClipboard(finalString, false); // Plain text copy
 
-    return (
-        <div className="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4">
-            <div className="card-v2 p-6 w-full max-w-2xl">
-                <h3 className="text-2xl font-bold mb-4 text-white font-heading">Customize Data to Copy</h3>
-                {type === 'b2b' && (
-                    <div className="mb-4">
-                        <p className="text-sm font-medium text-slate-300 mb-2">Filter by Remark:</p>
-                        <div className="flex space-x-2 rounded-lg bg-slate-900 p-1">
-                            {['Controllable', 'Non-Controllable', 'Both'].map(filter => (
-                                <button key={filter} onClick={() => setB2bFilter(filter)} className={'copy-filter-btn flex-1 ' + (b2bFilter === filter ? 'active' : '')}>{filter}</button>
-                            ))}
-                        </div>
-                    </div>
-                )}
-                <div>
-                    <p className="text-sm font-medium text-slate-300 mb-2">Select Columns to Copy:</p>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto p-2 bg-slate-900 rounded-md border border-slate-700">
-                        {headers.map(h => (
-                            <label key={String(h.key)} className="flex items-center space-x-2 text-slate-300 cursor-pointer p-1 rounded hover:bg-white/5">
-                                <input type="checkbox" checked={selectedColumns.has(String(h.key))} onChange={() => handleColumnToggle(String(h.key))} className="form-checkbox bg-slate-700 border-slate-500 rounded text-sky-500 focus:ring-sky-500" />
-                                <span>{h.label}</span>
-                            </label>
-                        ))}
-                    </div>
-                </div>
-                <div className="mt-6 flex justify-end space-x-4">
-                    <button onClick={onClose} className="px-6 py-2 bg-slate-600 text-slate-100 font-semibold rounded-lg hover:bg-slate-500">Cancel</button>
-                    <button onClick={handleCopy} className="px-6 py-2 bg-sky-600 text-white font-semibold rounded-lg hover:bg-sky-700">{copyStatus}</button>
-                </div>
-            </div>
-        </div>
-    );
-};
+        copyModal.classList.add('hidden');
+        copyModal.classList.remove('flex');
+        
+        const originalCopyBtn = document.querySelector(`#${type}-dashboard .copy-button`);
+        if (originalCopyBtn) {
+            originalCopyBtn.textContent = 'Copied!';
+            setTimeout(() => { originalCopyBtn.textContent = 'Copy Table Data'; }, 2000);
+        }
+    });
 
+    // --- GOOGLE SHEET FUNCTION ---
+    function syncWithGoogleSheet(type, data) {
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzuqx-eqUnx-sOUc0GeZHkabflWQMFSpI96jwfkm6Dc75tDfypYITPtWOsXb2uyJtsV/exec";
 
-function App() {
-    const [view, setView] = useState('upload');
-    const [analysisResult, setAnalysisResult] = useState(null);
-    const [fileTimestamp, setFileTimestamp] = useState(null);
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState(null);
-    const [syncStatus, setSyncStatus] = useState('idle');
-    
-    const [detailsModalData, setDetailsModalData] = useState(null);
-    const [copyModalData, setCopyModalData] = useState(null);
-
-    const b2cHeaders = useMemo(() => [
-        { key: 'wbn', label: 'WBN' },
-        { key: 'sd_dif', label: 'Ageing (hrs)' },
-        { key: 'ndc', label: 'NDC' },
-        { key: 'status', label: 'Status' },
-    ], []);
-
-    const b2bHeaders = useMemo(() => [
-        { key: 'wbn', label: 'WBN' },
-        { key: 'ntc', label: 'NTC' },
-        { key: 'client', label: 'Client'},
-        { key: 'ageing_days', label: 'Ageing (Days)' },
-        { key: 'remark_combined', label: 'Remark' },
-        { key: 'cs_sr', label: 'CS SR' },
-    ], []);
-
-    const handleFileSelect = useCallback((file) => {
-        setIsLoading(true); setError(null); setFileTimestamp(file.lastModified);
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            const result = processCsvData(event.target?.result);
-            if (result.type === 'error') {
-                setError(result.message); setView('upload');
-            } else {
-                setAnalysisResult(result.data); setView(result.type);
-            }
-            setIsLoading(false);
+        const payload = { 
+            type: type, 
+            data: data,
+            timestamp: fileTimestamp 
         };
-        reader.onerror = () => { setError("Error reading file."); setIsLoading(false); };
-        reader.readAsText(file);
-    }, []);
+        const syncButton = document.querySelector(`.sync-sheet-btn[data-type='${type}']`);
+        
+        if (syncButton) {
+            syncButton.textContent = 'Syncing...';
+            syncButton.disabled = true;
+        }
 
-    const handleSync = useCallback(async () => {
-        if (!analysisResult || !fileTimestamp) return;
-        setSyncStatus('syncing');
-        
-        const type = 'ndcSummary' in analysisResult ? 'b2c' : 'b2b';
-        const dataToSync = analysisResult.detailedWBNs;
-        
-        const result = await syncWithGoogleSheet(type, dataToSync, fileTimestamp);
-        if(result.success) {
-            setSyncStatus('synced');
-            setTimeout(() => setSyncStatus('idle'), 3000);
+        fetch(WEB_APP_URL, {
+            method: 'POST',
+            mode: 'no-cors', 
+            cache: 'no-cache',
+            body: JSON.stringify(payload),
+            redirect: 'follow'
+        }).then(() => {
+            console.log('Successfully sent sync request to Google Sheet.');
+            if (syncButton) syncButton.textContent = 'Sync Sent!';
+            showMessage('Sync request sent! The sheet will update in the background.', false);
+        }).catch(error => {
+            console.error('Network or fetch error:', error);
+            showMessage(`Failed to send sync request. Check network connection.`, true);
+            if (syncButton) syncButton.textContent = 'Sync Failed';
+        }).finally(() => {
+            setTimeout(() => {
+                if (syncButton) {
+                    syncButton.textContent = 'Sync with Sheet';
+                    syncButton.disabled = false;
+                }
+            }, 3000);
+        });
+    }
+
+    // --- HELPERS ---
+    function copyToClipboard(data, isHtml) {
+        if (isHtml) {
+            const listener = (e) => {
+                e.preventDefault();
+                e.clipboardData.setData('text/html', data);
+                e.clipboardData.setData('text/plain', data);
+            };
+            document.addEventListener('copy', listener);
+            document.execCommand('copy');
+            document.removeEventListener('copy', listener);
         } else {
-            setError(result.error || 'Sync failed.'); setSyncStatus('idle');
+            const textarea = document.createElement('textarea');
+            textarea.value = data;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
         }
-    }, [analysisResult, fileTimestamp]);
+    }
 
-    const handleShowDetails = useCallback((title, data, headers, type) => { setDetailsModalData({ title, data, headers, type }); }, []);
-    const handleShowCopy = useCallback((data, headers, type) => { setCopyModalData({ data, headers, type }); }, []);
+    function sortData(type, data, key, order) {
+        return [...data].sort((a, b) => {
+            let valA = a[key] === null || a[key] === undefined ? '' : a[key];
+            let valB = b[key] === null || b[key] === undefined ? '' : b[key];
+            if (key === 'sd_dif' || key === 'ageing_days') {
+                valA = parseFloat(valA);
+                valB = parseFloat(valB);
+            }
+            if (typeof valA === 'number' && typeof valB === 'number') {
+                return order === 'asc' ? valA - valB : valB - valA;
+            }
+            valA = String(valA).toLowerCase();
+            valB = String(valB).toLowerCase();
+            if (valA < valB) return order === 'asc' ? -1 : 1;
+            if (valA > valB) return order === 'asc' ? 1 : -1;
+            return 0;
+        });
+    }
 
-    const renderB2CRow = useCallback((item) => (
-        <tr key={item.wbn}>
-             <td className="p-2 border-b border-slate-800">
-                <a href={`${WBN_BASE_URL}${item.wbn}`} target="_blank" rel="noopener noreferrer" className="text-sky-400 hover:underline">{item.wbn}</a>
-                {item.producttype === 'Heavy' && <span className="shipment-indicator indicator-h">H</span>}
-                {item.large && <span className="shipment-indicator indicator-l">L</span>}
-            </td>
-            <td className="p-2 border-b border-slate-800">{item.sd_dif.toFixed(2)}</td>
-            <td className="p-2 border-b border-slate-800">{item.ndc}</td>
-            <td className="p-2 border-b border-slate-800">{item.status}</td>
-        </tr>
-    ), []);
+    function updateSortIcons(type) {
+        document.querySelectorAll(`#${type}-dashboard th[data-sort-key]`).forEach(h => {
+            h.classList.remove('sorted-asc', 'sorted-desc');
+            const sortKey = h.dataset.sortKey;
+            if (currentSorts[type].key === sortKey) {
+                h.classList.add(currentSorts[type].order === 'asc' ? 'sorted-asc' : 'sorted-desc');
+            }
+        });
+    }
 
-    const renderB2BRow = useCallback((item) => (
-         <tr key={item.wbn}>
-            <td className="p-2 border-b border-slate-800"><a href={`${WBN_BASE_URL}${item.wbn}`} target="_blank" rel="noopener noreferrer" className="text-sky-400 hover:underline">{item.wbn}</a></td>
-            <td className="p-2 border-b border-slate-800">{item.ntc}</td>
-            <td className="p-2 border-b border-slate-800">{item.client}</td>
-            <td className="p-2 border-b border-slate-800">{item.ageing_days.toFixed(0)}</td>
-            <td className="p-2 border-b border-slate-800">{item.remark_combined}</td>
-            <td className="p-2 border-b border-slate-800">{item.cs_sr}</td>
-        </tr>
-    ), []);
-
-    const renderContent = () => {
-        switch (view) {
-            case 'b2c': return <B2CDashboard data={analysisResult} onSync={handleSync} syncStatus={syncStatus} onShowDetails={handleShowDetails} headers={b2cHeaders} />;
-            case 'b2b': return <B2BDashboard data={analysisResult} onSync={handleSync} syncStatus={syncStatus} onShowDetails={handleShowDetails} headers={b2bHeaders} />;
-            default: return <FileUpload onFileSelect={handleFileSelect} isLoading={isLoading} error={error} />;
-        }
-    };
-
-    return (
-        <React.Fragment>
-            <main className="mx-auto p-4 md:p-8">
-                {renderContent()}
-            </main>
-            {detailsModalData && (
-                <DetailsModal 
-                    {...detailsModalData}
-                    onClose={() => setDetailsModalData(null)}
-                    renderRow={detailsModalData.type === 'b2c' ? renderB2CRow : renderB2BRow}
-                    onShowCopy={handleShowCopy}
-                />
-            )}
-            {copyModalData && (
-                <CopyModal
-                    {...copyModalData}
-                    onClose={() => setCopyModalData(null)}
-                />
-            )}
-        </React.Fragment>
-    );
-}
-
-const rootElement = document.getElementById('root');
-if (!rootElement) {
-  throw new Error("Could not find root element to mount to");
-}
-
-const root = ReactDOM.createRoot(rootElement);
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
-
+    function showMessage(msg, isError) {
+        messageArea.innerHTML = msg;
+        messageArea.className = `mt-4 text-center p-3 rounded-md ${isError ? 'text-red-200 bg-red-900/40' : 'text-blue-200 bg-blue-900/40'}`;
+    }
+});
 </script>
 
+<script type="module" src="/index.tsx"></script>
 </body>
 </html>
